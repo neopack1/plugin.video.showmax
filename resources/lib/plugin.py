@@ -30,7 +30,7 @@ def before_dispatch():
 
 @plugin.route('')
 def home():
-    folder = plugin.Folder(cacheToDisc=False)
+    folder = plugin.Folder()
 
     if not plugin.logged_in:
         folder.add_item(label=_(L_LOGIN, bold=True), path=plugin.url_for(login))
@@ -135,6 +135,8 @@ def login():
             api.login(username=username, password=password)
         except Exception:
             gui.ok(_(L_LOGIN_ERROR))
+        else:
+            gui.refresh()
 
     cache.delete('password')
 
@@ -144,6 +146,7 @@ def logout():
         return
 
     api.logout()
+    gui.refresh()
 
 @plugin.route()
 @plugin.login_required()
