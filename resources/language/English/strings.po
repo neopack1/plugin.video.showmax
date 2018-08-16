@@ -16,7 +16,9 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-### {COMMON} ###
+
+### [COMMON] ###
+
 
 msgctxt "#32000"
 msgid "You need to login to access this content"
@@ -27,11 +29,11 @@ msgid "No default route found"
 msgstr ""
 
 msgctxt "#32002"
-msgid "Are you sure you want to reset this plugins data?"
+msgid "Are you sure you want to clear this plugins data?"
 msgstr ""
 
 msgctxt "#32003"
-msgid "Reset OK"
+msgid "Clear Data OK"
 msgstr ""
 
 msgctxt "#32004"
@@ -92,21 +94,22 @@ msgid "There was an unexpected error installing Widevine\n"
 "Please restart KODI and try again"
 msgstr ""
 
-### {SETTINGS} ###
-
-msgctxt "#31007"
+msgctxt "#32017"
 msgid "Use Cache"
 msgstr ""
 
-msgctxt "#31008"
-msgid "Reset Data"
-msgstr ""
-
-msgctxt "#31009"
+msgctxt "#32018"
 msgid "Inputstream Settings"
 msgstr ""
 
-### {PLUGIN} ###
+msgctxt "#32019"
+msgid "Clear Data"
+msgstr ""
+
+
+
+### [PLUGIN] ###
+
 
 msgctxt "#30000"
 msgid "Login"
@@ -138,7 +141,7 @@ msgid "Are you sure you want to logout?"
 msgstr ""
 
 msgctxt "#30008"
-msgid "Shows"
+msgid "Series"
 msgstr ""
 
 msgctxt "#30009"

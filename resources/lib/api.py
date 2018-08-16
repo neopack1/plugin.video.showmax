@@ -12,15 +12,22 @@ class Error(Exception):
     pass
 
 class API(object):
-    def new_session(self):
-        self.logged_in = False
-        self._session = Session(HEADERS, base_url=API_URL)
-        self.set_access_token(userdata.get('access_token'))
+    def __init__(self):
+        self.new_session()
 
-    def set_access_token(self, token):
+    def new_session(self):
+        self._logged_in = False
+        self._session = Session(HEADERS, base_url=API_URL)
+        self._set_access_token(userdata.get('access_token'))
+
+    def _set_access_token(self, token):
         if token:
-            self._session.headers.update({'Authorization': 'Bearer {0}'.format(token)})
-            self.logged_in = True
+            self._session.headers.update({'Authorization': 'Bearer {}'.format(token)})
+            self._logged_in = True
+
+    @property
+    def logged_in(self):
+        return self._logged_in
         
     def login(self, username, password):
         log('API: Login')
@@ -47,21 +54,29 @@ class API(object):
         
         if not access_token:
             self.logout()
-            raise Error()
+            return False
 
-        self.set_access_token(access_token)
+        self._set_access_token(access_token)
 
         data = self._session.get('user/current', params={'lang':'eng'}).json()
         if 'error_code' in data:
-            raise Error()
+            return False
 
         device_id = hashlib.sha1(username).hexdigest().upper()
 
         userdata.set('device_id', device_id)
         userdata.set('access_token', access_token)
         userdata.set('user_id', data['user_id'])
+        return True
 
-    def catalogue(self, _params):
+    def logout(self):
+        log('API: Logout')
+        userdata.delete('device_id')
+        userdata.delete('access_token')
+        userdata.delete('user_id')
+        self.new_session()
+
+    def _catalogue(self, _params):
         def process_page(start):
             params = {
                 'field[]': ['id', 'images', 'title', 'items', 'total', 'type', 'description', 'videos'],
@@ -86,24 +101,24 @@ class API(object):
 
         return process_page(start=0)
 
-    def shows(self):
-        return self.catalogue({
+    def all_series(self):
+        return self._catalogue({
             'type': 'tv_series',
             'exclude_section[]': ['kids'],
         })
 
     def movies(self):
-        return self.catalogue({
+        return self._catalogue({
             'type': 'movie',
             'exclude_section[]': ['kids'],
         })
 
     def kids(self):
-        return self.catalogue({
+        return self._catalogue({
             'section': 'kids',
         })
 
-    def show(self, show_id):
+    def series(self, series_id):
         params = {
             'field[]': ['id', 'images', 'title', 'items', 'total', 'type', 'description', 'videos', 'number', 'seasons', 'episodes'],
             'lang': 'eng',
@@ -111,19 +126,12 @@ class API(object):
             'subscription_status': 'full'
         }
 
-        return self._session.get('catalogue/tv_series/{}'.format(show_id), params=params).json()
+        return self._session.get('catalogue/tv_series/{}'.format(series_id), params=params).json()
 
     def search(self, query):
-        return self.catalogue({
+        return self._catalogue({
             'q': query,
         })
-
-    def logout(self):
-        log('API: Logout')
-        userdata.delete('device_id')
-        userdata.delete('access_token')
-        userdata.delete('user_id')
-        self.new_session()
 
     def play(self, video_id):
         params = {
@@ -132,7 +140,7 @@ class API(object):
             'lang': 'eng',
         }
 
-        data = self._session.get('playback/play/{0}'.format(video_id), params=params).json()
+        data = self._session.get('playback/play/{}'.format(video_id), params=params).json()
         
         url        = data['url']
         task_id    = data['packaging_task_id']
@@ -150,6 +158,6 @@ class API(object):
         data = self._session.post('playback/verify', params=params, data=data).json()
 
         license_request = data['license_request']
-        license_url = API_URL.format('drm/widevine_modular?license_request={0}'.format(license_request))
+        license_url = API_URL.format('drm/widevine_modular?license_request={}'.format(license_request))
 
         return url, license_url

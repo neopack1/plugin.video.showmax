@@ -11,7 +11,7 @@ L_ASK_USERNAME     = 30004
 L_ASK_PASSWORD     = 30005
 L_LOGIN_ERROR      = 30006
 L_LOGOUT_YES_NO    = 30007
-L_SHOWS            = 30008
+L_SERIES           = 30008
 L_MOVIES           = 30009
 L_KIDS             = 30010
 L_SEASON_NUMBER    = 30011
@@ -35,10 +35,10 @@ def home():
     if not plugin.logged_in:
         folder.add_item(label=_(L_LOGIN, bold=True), path=plugin.url_for(login))
 
-    folder.add_item(label=_(L_SHOWS,  bold=plugin.logged_in), path=plugin.url_for(shows),  cache_key=cache.key_for(shows))
-    folder.add_item(label=_(L_MOVIES, bold=plugin.logged_in), path=plugin.url_for(movies), cache_key=cache.key_for(movies))
-    folder.add_item(label=_(L_KIDS,   bold=plugin.logged_in), path=plugin.url_for(kids),   cache_key=cache.key_for(kids))
-    folder.add_item(label=_(L_SEARCH, bold=plugin.logged_in), path=plugin.url_for(search), cache_key=cache.key_for(search))
+    folder.add_item(label=_(L_SERIES, bold=plugin.logged_in),  path=plugin.url_for(all_series), cache_key=cache.key_for(all_series))
+    folder.add_item(label=_(L_MOVIES, bold=plugin.logged_in),  path=plugin.url_for(movies),     cache_key=cache.key_for(movies))
+    folder.add_item(label=_(L_KIDS,   bold=plugin.logged_in),  path=plugin.url_for(kids),       cache_key=cache.key_for(kids))
+    folder.add_item(label=_(L_SEARCH, bold=plugin.logged_in),  path=plugin.url_for(search),     cache_key=cache.key_for(search))
 
     if plugin.logged_in:
         folder.add_item(label=_(L_LOGOUT), path=plugin.url_for(logout))
@@ -49,9 +49,9 @@ def home():
 
 @plugin.route()
 @cache.cached(LIST_EXPIRY)
-def shows():
-    folder = plugin.Folder(title=_(L_SHOWS))
-    rows = api.shows()
+def all_series():
+    folder = plugin.Folder(title=_(L_SERIES))
+    rows = api.all_series()
     folder.add_items(_parse_rows(rows))
     return folder
 
@@ -97,12 +97,11 @@ def search():
 
 @plugin.route()
 @cache.cached(EPISODE_EXPIRY)
-def show(show_id):
-    folder = plugin.Folder()
-
-    data   = api.show(show_id)
+def series(series_id):
+    data   = api.series(series_id)
     art    = _get_art(data['images'])
-    folder.title = data['title']
+
+    folder = plugin.Folder(title=data['title'])
 
     for season in data['seasons']:
         folder.add_item(
@@ -131,12 +130,10 @@ def login():
 
         cache.set('password', password, expires=60)
 
-        try:
-            api.login(username=username, password=password)
-        except Exception:
-            gui.ok(_(L_LOGIN_ERROR))
-        else:
+        if api.login(username=username, password=password):
             gui.refresh()
+        else:
+            gui.ok(_(L_LOGIN_ERROR))
 
     cache.delete('password')
 
@@ -183,8 +180,8 @@ def _parse_rows(rows, default_art=None):
                 item.label = _(L_EPISODE_NUMBER, episode_number=row['number'])
 
         elif row['type'] == 'tv_series':
-            item.path      = plugin.url_for(show, show_id=row['id'])
-            item.cache_key = cache.key_for(show, show_id=row['id'])
+            item.path      = plugin.url_for(series, series_id=row['id'])
+            item.cache_key = cache.key_for(series, series_id=row['id'])
 
         items.append(item)
 

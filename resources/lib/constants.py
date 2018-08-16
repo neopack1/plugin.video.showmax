@@ -3,11 +3,11 @@ HEADERS = {
     'X-Requested-With': 'com.showmax.app',
 }
 
-API_URL    = 'https://api.showmax.com/v97.3/android/{}'
+API_URL   = 'https://api.showmax.com/v97.3/android/{}'
 LOGIN_URL = 'https://secure.showmax.com/v97.3/android/signin'
 
-LIST_EXPIRY    = (60*60*24) #24hours
-EPISODE_EXPIRY = (60*60*24) #24hours
+LIST_EXPIRY    = (60*60*48) #48 hours
+EPISODE_EXPIRY = (60*60*6)  #6 hours
 
 THUMB_HEIGHT  = 500
 FANART_HEIGHT = 720
